@@ -1,0 +1,45 @@
+#!/bin/bash
+amnt=""
+
+if [[ -z $1 ]]; then
+	while true; do
+		echo 'Missing Argument: Number of random hosts to scan'
+		echo -n '[amount]: '
+		read -r amnt
+
+		if [[ $amnt > 0 ]]; then
+			break
+		else
+			echo 'Bad Input!'
+		fi
+	done
+else
+	amnt=$1
+fi
+
+echo -n 'Running'
+
+nmap -T3 -iR $amnt -p53,80,443,23,22,21,25,139,135,445,1433,890,5555,8000,8008,8888,9000,9009,1337,3398 --open -oN .net 1>/dev/null &
+
+while [[ $(ps | grep nmap) ]]; do
+	echo -n '.'
+	sleep 1
+done
+
+sed -e '/Host/d' -e '/\# Nmap/d' -e '/^\s*$/d' -e 's/Nmap scan report for /\n/' -e '/Not shown/d' -e '/Some closed/d' -i .net
+
+if [[ -n $(cat .net) ]]; then
+	cat .net >> fishing
+	if [[ -z $(sed -n '1p' fishing) ]]; then
+		sed '1d' -i fishing
+	fi
+
+	echo -e "\n\n\e[1;33;4mIP List:\e[00m"
+	sed -e '/PORT/d' -e '/open/d' -e '/^\s*$/d' -e 's/\s*(.*)\s*//' .net
+	echo -e "\nThe full scans of each IP are in the file called \"fishing\""
+else
+	echo -e "\n\n\e[1;32mNo hosts with open ports found! Try again!\e[00m"
+fi
+
+rm .net
+exit 0
