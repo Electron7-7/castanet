@@ -1,5 +1,10 @@
 #!/bin/bash
 amnt=""
+stat=0
+ips='21-25,42,53,80,135-139,443-445,890,1337,1433-1434,1512,3398,5555,8080,9090'
+
+[[ -e .net ]] && rm .net
+[[ -z $THECATCH ]] && THECATCH=$HOME/casting_the_net/fishing
 
 if [[ -z $1 ]]; then
 	while true; do
@@ -17,29 +22,30 @@ else
 	amnt=$1
 fi
 
-echo -n 'Running'
+timer=0
 
-nmap -T3 -iR $amnt -p53,80,443,23,22,21,25,139,135,445,1433,890,5555,8000,8008,8888,9000,9009,1337,3398 --open -oN .net 1>/dev/null &
+nmap -T5 -Pn -R -p$ips --open -iR $amnt -oN .net &>/dev/null &
 
 while [[ $(ps | grep nmap) ]]; do
-	echo -n '.'
+	if [[ $((timer % 3)) == 0 ]]; then
+		echo -ne "\e[2K\r\e[1;32m"'[Running]'
+	fi
+	timer=$((timer + 1))
+	echo -ne "\e[1;32m"'.'
 	sleep 1
 done
 
-sed -e '/Host/d' -e '/\# Nmap/d' -e '/^\s*$/d' -e 's/Nmap scan report for /\n/' -e '/Not shown/d' -e '/Some closed/d' -i .net
+sed -re '/(\# Nmap|Host|Not shown|Some closed|Warning)/d' -re 's/Nmap.*for //gm' -i .net
 
 if [[ -n $(cat .net) ]]; then
-	cat .net >> fishing
-	if [[ -z $(sed -n '1p' fishing) ]]; then
-		sed '1d' -i fishing
-	fi
-
-	echo -e "\n\n\e[1;33;4mIP List:\e[00m"
-	sed -e '/PORT/d' -e '/open/d' -e '/^\s*$/d' -e 's/\s*(.*)\s*//' .net
-	echo -e "\nThe full scans of each IP are in the file called \"fishing\""
+	cat .net >> $THECATCH
+	echo -e "\n\e[1;32;4m$THECATCH populated with new IP addresses!"
+	echo -e "\n\e[1;33;4mNew IPs Added:\e[00m"
+	grep --color=never -E ".*\(([0-9]+.)+\)" .net
 else
-	echo -e "\n\n\e[1;32mNo hosts with open ports found! Try again!\e[00m"
+	echo -e "\n\e[0;1;41mNo hosts with open ports found\e[0m"
+	stat=1
 fi
 
-rm .net
-exit 0
+#rm .net
+exit $stat
