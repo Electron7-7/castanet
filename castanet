@@ -4,7 +4,7 @@ stat=0
 ips='21-25,42,53,80,135-139,443-445,890,1337,1433-1434,1512,3398,5555,8080,9090'
 
 [[ -e .net ]] && rm .net
-[[ -z $THECATCH ]] && THECATCH=$HOME/casting_the_net/fishing
+[[ -z $THECATCH ]] && THECATCH=$HOME/ip_addresses
 
 if [[ -z $1 ]]; then
 	while true; do
@@ -47,5 +47,5 @@ else
 	stat=1
 fi
 
-#rm .net
+rm .net
 exit $stat
