@@ -31,10 +31,12 @@ def FilterNmapOutput(nmap_output: str) -> str:
 	filtered_output: str
 	partially_filtered_output: str
 
-	regex_delete_filter = "((Host is up|Not shown|Some closed|Warning).*|Nmap scan report for )"
+	regex_delete_filter = "(Host is up|Not shown|Some closed|Warning).*"
+	regex_substitute_filter = "Nmap scan report for "
 
 	partially_filtered_output = re.sub(regex_delete_filter, '', nmap_output)
-	filtered_output = os.linesep.join([line for line in partially_filtered_output.splitlines() if line])
+	almost_filtered_output = os.linesep.join([line for line in partially_filtered_output.splitlines() if line])
+	filtered_output = re.sub(regex_substitute_filter, '\n', almost_filtered_output)
 
 	return filtered_output
 
