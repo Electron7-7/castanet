@@ -1,51 +1,52 @@
-#!/bin/bash
-amnt=""
-stat=0
-ips='21-25,42,53,80,135-139,443-445,890,1337,1433-1434,1512,3398,5555,8080,9090'
+#!/usr/bin/env python3
+import os
+import shutil
+import re
+import subprocess
+import argparse
 
-[[ -e .net ]] && rm .net
-[[ -z $THECATCH ]] && THECATCH=$HOME/ip_addresses
+if os.getuid() != 0:
+	print('Please run with sudo!')
+	exit(1)
 
-if [[ -z $1 ]]; then
-	while true; do
-		echo 'Missing Argument: Number of random hosts to scan'
-		echo -n '[amount]: '
-		read -r amnt
+parser = argparse.ArgumentParser(description='castanet test build')
+parser.add_argument('number_of_hosts', type=int, help='The number of random hosts to scan')
+args = parser.parse_args()
 
-		if [[ $amnt > 0 ]]; then
-			break
-		else
-			echo 'Bad Input!'
-		fi
-	done
-else
-	amnt=$1
-fi
+username = os.environ.get('SUDO_USER')
+file_output_path = str(os.path.expanduser(f'~{username}')) + '/castanet_output'
 
-timer=0
+ports: str = '21-25,42,53,80,135-139,443-445,890,1337,1433,1434,1512,3398,5555,8080,9090'
 
-nmap -T5 -Pn -R -p$ips --open -iR $amnt -oN .net &>/dev/null &
+random_scans = subprocess.run(['nmap', '-iR', str(args.number_of_hosts), '-p', ports, '-R', '--open'], check=True, text=True, capture_output=True)
 
-while [[ $(ps | grep nmap) ]]; do
-	if [[ $((timer % 3)) == 0 ]]; then
-		echo -ne "\e[2K\r\e[1;32m"'[Running]'
-	fi
-	timer=$((timer + 1))
-	echo -ne "\e[1;32m"'.'
-	sleep 1
-done
 
-sed -re '/(\# Nmap|Host|Not shown|Some closed|Warning)/d' -re 's/Nmap.*for //gm' -i .net
+def HostsAreAlive(nmap_output: str) -> bool:
+	if re.search("Nmap scan report", nmap_output) == None:
+		return False
+	return True
 
-if [[ -n $(cat .net) ]]; then
-	cat .net >> $THECATCH
-	echo -e "\n\e[1;32;4m$THECATCH populated with new IP addresses!"
-	echo -e "\n\e[1;33;4mNew IPs Added:\e[00m"
-	grep --color=never -E ".*\(([0-9]+.)+\)" .net
-else
-	echo -e "\n\e[0;1;41mNo hosts with open ports found\e[0m"
-	stat=1
-fi
 
-rm .net
-exit $stat
+def FilterNmapOutput(nmap_output: str) -> str:
+	filtered_output: str
+	partially_filtered_output: str
+
+	regex_delete_filter = "((Host is up|Not shown|Some closed|Warning).*|Nmap scan report for )"
+
+	partially_filtered_output = re.sub(regex_delete_filter, '', nmap_output)
+	filtered_output = os.linesep.join([line for line in partially_filtered_output.splitlines() if line])
+
+	return filtered_output
+
+
+def main() -> int:
+	if HostsAreAlive(random_scans.stdout):
+		with open(file_output_path, 'a') as output_file:
+			output_file.write(FilterNmapOutput(random_scans.stdout) + '\n')
+			shutil.chown(file_output_path, user=username, group=-1)
+		return 0
+	return 1
+
+
+if __name__ == '__main__':
+	exit(main())
