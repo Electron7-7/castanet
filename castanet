@@ -42,7 +42,7 @@ def FilterNmapOutput(nmap_output: str) -> str:
 def main() -> int:
 	if HostsAreAlive(random_scans.stdout):
 		with open(file_output_path, 'a') as output_file:
-			output_file.write(FilterNmapOutput(random_scans.stdout) + '\n')
+			output_file.write('\n' + FilterNmapOutput(random_scans.stdout) + '\n')
 			shutil.chown(file_output_path, user=username, group=-1)
 		return 0
 	return 1
