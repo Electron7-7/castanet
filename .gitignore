@@ -1,0 +1,9 @@
+# clangd & bear stuff
+.cache/
+compile_commands*.json
+
+# build system stuff
+build/
+
+# testing files
+tests/
