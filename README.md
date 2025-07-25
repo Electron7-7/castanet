@@ -27,8 +27,6 @@
         castanet 14
         castanet -o local_castanet_output 2000
         castanet -p 40 | nmap -sC -sV -Pn -oN huge_scan -iL -
-
-    v2.0.3
 ```
 
 ## What's New in Version Two?
