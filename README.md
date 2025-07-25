@@ -7,9 +7,10 @@ Castanet started life as a simple script, first in Bash, then in Python, and eve
 Cast yourself a little net over... well, the net!
 
 ## What's next?
+
 I'd like to add a few quality of life changes, including:
-    - A status bar/message while `nmap` is running
-    - The ability to change the `nmap` command
-        - Either via environment variable, program flags, or both
-    - Maybe an option to use `-Pn` with `sudo`, for better results
-    - More colors???...
+- A status bar/message while `nmap` is running
+- The ability to change the `nmap` command
+    - Either via environment variable, program flags, or both
+- Maybe an option to use `-Pn` with `sudo`, for better results
+- More colors???...
