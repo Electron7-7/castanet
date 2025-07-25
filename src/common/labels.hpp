@@ -26,7 +26,7 @@ static const char* DEBUG()
 {
     if(flag_NoColor)
         return LABEL_DEBUG;
-    return COLOR_BOLD(DEFAULT) LABEL_ERROR COLOR_RESET;
+    return COLOR_BOLD(DEFAULT) LABEL_DEBUG COLOR_RESET;
 }
 
 static const char* RESET_COLOR()

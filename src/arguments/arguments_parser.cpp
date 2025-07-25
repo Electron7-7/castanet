@@ -1,6 +1,8 @@
 #include "arguments_parser.hpp"
 #include "common/labels.hpp"
 #include <cstdio>
+#include <stdexcept>
+#include <string>
 
 ArgumentsParser static_ArgumentsParser;
 ArgumentsParser* global_ArgumentsParser = &static_ArgumentsParser;
@@ -27,16 +29,12 @@ bool _contains(std::vector<Flag>& flags, const Flag& flag)
     return false;
 }
 
-
 void ArgumentsParser::AddOption(const Option& option)
 {
     if(_contains(_valid_options, option))
         return;
 
     _valid_options.insert(_valid_options.end(), option);
-
-    if(option.IsOptionMandatory())
-        _mandatory_options.insert(_mandatory_options.end(), option);
 }
 
 void ArgumentsParser::AddFlag(const Flag& flag)
@@ -73,8 +71,27 @@ ErrCode ArgumentsParser::ParseArguments(int argc, char** argv)
             {
                 if((i+1) < argc) _valid_options.at(i_o).SetValue(argv[++i]);
                 _options.insert(_options.end(), _valid_options.at(i_o));
+                if(_options.at(i_o).IsOptionMandatory())
+                    _mandatory_options.insert(_mandatory_options.end(), _options.at(i_o));
                 continue;
             }
+        }
+
+        if(i == argc - 1)
+        {
+            long long try_number_of_hosts = 0;
+            try
+            {
+                try_number_of_hosts = std::stoll(argv[i]);
+            }
+            catch(std::invalid_argument const& exception)
+            {
+                if(!flag_Silent && !flag_NoMessage)
+                    printf("%s Invalid number of hosts: '%s'%s\n", ERROR(), argv[i], RESET_COLOR());
+                return Err::Args::INVALID_NUMBER_OF_HOSTS;
+            }
+
+            argument_NumberOfHosts = try_number_of_hosts;
         }
     }
 
@@ -82,7 +99,8 @@ ErrCode ArgumentsParser::ParseArguments(int argc, char** argv)
     {
         if(!option.HasValue())
         {
-            printf("%s ArgumentsParser::ParseArguments - The argument '%s' requires a valid option but none were given!%s\n", ERROR(), option.PrettyName(), COLOR_RESET);
+            if(!flag_Silent && !flag_NoMessage)
+                printf("%s ArgumentsParser::ParseArguments - The argument '%s' requires a valid option but none were given!%s\n", ERROR(), option.PrettyName(), COLOR_RESET);
             return Err::Args::MANDATORY_ARGUMENT_OPTION_MISSING;
         }
     }
@@ -91,5 +109,5 @@ ErrCode ArgumentsParser::ParseArguments(int argc, char** argv)
     _valid_options.clear();
     _valid_flags.clear();
 
-    return Err::NO_ERROR;
+    return Err::SUCCESS;
 }
