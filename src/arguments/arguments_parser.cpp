@@ -72,13 +72,14 @@ ErrCode ArgumentsParser::ParseArguments(int argc, char** argv)
         {
             if(_valid_options.at(i_o) == argv[i])
             {
+                if((i+1) < argc) _valid_options.at(i_o).SetValue(argv[++i]);
+                _options.insert(_options.end(), _valid_options.at(i_o));
+
                 if(last_argc_processed < i)
                     last_argc_processed = i;
 
-                if((i+1) < argc) _valid_options.at(i_o).SetValue(argv[++i]);
-                _options.insert(_options.end(), _valid_options.at(i_o));
                 if(_options.at(i_o).IsOptionMandatory())
-                    _mandatory_options.insert(_mandatory_options.end(), _options.at(i_o));
+                    _mandatory_options.insert(_mandatory_options.end(), _valid_options.at(i_o));
                 continue;
             }
         }

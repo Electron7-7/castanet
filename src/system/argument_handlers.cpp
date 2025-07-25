@@ -89,6 +89,9 @@ ErrCode OptionsHandler(std::vector<Option>* options)
         {
             option_Output_WasSpecified = true;
 
+            if(flag_DebugMode)
+                printf("::Option '%s' Set to: '%s'\n", option.PrettyName(), option.GetValue());
+
             if(!option.HasValue())
                 return Err::Args::MANDATORY_ARGUMENT_OPTION_MISSING;
 

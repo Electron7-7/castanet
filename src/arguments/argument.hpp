@@ -70,7 +70,7 @@ public:
     {}
 
     constexpr Option(const Option& CopyFrom)
-    : _Arg(CopyFrom._long_name, CopyFrom._short_name), _is_option_mandatory(CopyFrom._is_option_mandatory)
+    : _Arg(CopyFrom._long_name, CopyFrom._short_name), _value(CopyFrom._value), _is_option_mandatory(CopyFrom._is_option_mandatory)
     {}
 
     constexpr Option(const char* Name)
