@@ -50,7 +50,7 @@ FileStatus CheckFilePath(const char* wish_file_name = nullptr)
     return FileStatus::FAILURE;
 }
 
-bool try_SetOutputFile(const char* wish_output_file, bool suppress_printouts = false)
+bool try_SetOutputFile(const char* wish_output_file, bool suppress_printouts)
 {
     FileStatus file_status = CheckFilePath(wish_output_file);
     const char* new_output_file;
@@ -64,20 +64,19 @@ bool try_SetOutputFile(const char* wish_output_file, bool suppress_printouts = f
         if(!new_output_file)
             new_output_file = option_OutputFile.c_str();
         // Call this function again because I want the unique printouts, but I don't want to copy&paste strings
-        try_SetOutputFile(new_output_file);
+        try_SetOutputFile(new_output_file, suppress_printouts);
         return false;
 
     case FileStatus::SUCCESS_FILE_EXISTS:
-        output_file_already_exists = true;
         option_OutputFile = wish_output_file;
         if(!suppress_printouts && !flag_Silent)
-            printf("Output will be appended to '%s'\n", wish_output_file);
+            printf("::Output will be appended to %s'%s'%s\n", COLOR(CYAN), wish_output_file, RESET_COLOR());
         return true;
 
     case FileStatus::SUCCESS_FILE_CREATED:
         option_OutputFile = wish_output_file;
         if(!suppress_printouts && !flag_Silent)
-            printf("Output will be written to '%s'\n", wish_output_file);
+            printf("::Output will be written to %s'%s'%s\n", COLOR(CYAN), wish_output_file, RESET_COLOR());
         return true;
     }
 }

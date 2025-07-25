@@ -9,5 +9,6 @@ ErrCode OptionsHandler(std::vector<Option>* Options);
 ErrCode FlagsHandler(std::vector<Flag>* Flags);
 
 ErrCode helper_WarnIfOptionMissingValue(Option& Option, const char* DefaultValue);
+bool try_SetOutputFile(const char* WishOutputFile, bool SuppressPrintouts = false);
 
 #endif // ARGUMENT_HANDLERS_H
