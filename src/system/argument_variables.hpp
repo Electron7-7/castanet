@@ -28,6 +28,6 @@ inline bool flag_Pipe = false;
 
 inline long long argument_NumberOfHosts = 0;
 
-inline int last_argc_processed = 1;
+inline int last_argc_processed = 0;
 
 #endif // ARGUMENT_VARIABLES_H
