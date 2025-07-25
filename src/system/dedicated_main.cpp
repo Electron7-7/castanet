@@ -160,7 +160,7 @@ int main(int argc, char** argv)
         output_data = "";
 
         std::smatch minimal_matches;
-        std::regex ip_and_dns_only_pattern(R"(Nmap scan report for (?:((?:\w\.?)+)\s\(((?:\d{1,3}\.?){4})\)|((?:\d{1,3}\.?)+)))");
+        std::regex ip_and_dns_only_pattern(R"(Nmap scan report for (?:((?:\w+(?:\.|-)?)+) )?(?:\(?((?:\d+\.?)+)\)?))");
         std::regex_search(nmap_output, minimal_matches, ip_and_dns_only_pattern);
 
         auto begin = std::sregex_iterator(output_data_copy.begin(), output_data_copy.end(), ip_and_dns_only_pattern);
@@ -172,23 +172,18 @@ int main(int argc, char** argv)
 
             if(flag_IncludeDNS && !flag_Pipe)
             {
-                int ip_match_number = 3;
-
-                if(!match.str(1).empty() && !match.str(2).empty())
-                {
+                if(!match.str(1).empty())
                     output_data += match.str(1) + " ";
-                    ip_match_number = 2;
-                }
 
-                output_data += match.str(ip_match_number) + "\n";
+                output_data += match.str(2) + "\n";
                 continue;
             }
 
-            std::string ip_address = (match.str(2).empty()) ? match.str(3) : match.str(2);
-            output_data += ip_address + "\n";
-
             if(flag_DebugMode)
-                printf("%s Match: %s'%s', '%s', '%s', '%s'%s\n", DEBUG(), COLOR(GREEN), match.str().c_str(), match.str(1).c_str(), match.str(2).c_str(), match.str(3).c_str(), RESET_COLOR());
+                printf("%s Matches: %sCapture Group 0: '%s' Capture Group 1: '%s' Capture Group 2: '%s'%s\n", DEBUG(), COLOR(GREEN), match.str().c_str(), match.str(1).c_str(), match.str(2).c_str(), RESET_COLOR());
+
+            std::string ip_address = match.str(2);
+            output_data += ip_address + "\n";
         }
 
         output_data += "\n";
