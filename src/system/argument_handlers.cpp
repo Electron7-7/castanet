@@ -115,27 +115,58 @@ ErrCode FlagsHandler(std::vector<Flag>* flags)
             continue;
         }
 
+        if(flag == Flags::Verbose)
+        {
+            flag_Verbose = true;
+            printf("Verbosity increased (Nmap output enabled)\n");
+            continue;
+        }
+
+        if(flag == Flags::Timestamp)
+        {
+            flag_AddTimestamp = true;
+            if((flag_DebugMode || flag_Verbose) && !flag_Silent)
+                printf("::Flag Set: %s%s%s\n", COLOR(GREEN), "flag_AddTimestamp", RESET_COLOR());
+            continue;
+        }
+
         if(flag == Flags::NoMessage)
         {
             flag_NoMessage = true;
+            if((flag_DebugMode || flag_Verbose) && !flag_Silent)
+                printf("::Flag Set: %s%s%s\n", COLOR(GREEN), "flag_NoMessage", RESET_COLOR());
             continue;
         }
 
         if(flag == Flags::NoColor)
         {
             flag_NoColor = true;
+            if((flag_DebugMode || flag_Verbose) && !flag_Silent)
+                printf("::Flag Set: %s%s%s\n", COLOR(GREEN), "flag_NoColor", RESET_COLOR());
             continue;
         }
 
         if(flag == Flags::Silent)
         {
             flag_Silent = true;
+            if((flag_DebugMode || flag_Verbose) && !flag_Silent)
+                printf("::Flag Set: %s%s%s\n", COLOR(GREEN), "flag_Silent", RESET_COLOR());
             continue;
         }
 
         if(flag == Flags::Minimal)
         {
             flag_Minimal = true;
+            if((flag_DebugMode || flag_Verbose) && !flag_Silent)
+                printf("::Flag Set: %s%s%s\n", COLOR(GREEN), "flag_Minimal", RESET_COLOR());
+            continue;
+        }
+
+        if(flag == Flags::YesDNS)
+        {
+            flag_IncludeDNS = true;
+            if((flag_DebugMode || flag_Verbose) && !flag_Silent)
+                printf("::Flag Set: %s%s%s\n", COLOR(GREEN), "flag_IncludeDNS", RESET_COLOR());
             continue;
         }
 
@@ -144,6 +175,9 @@ ErrCode FlagsHandler(std::vector<Flag>* flags)
             flag_NoMessage = true;
             flag_NoColor = true;
             flag_Minimal = true;
+            flag_Pipe = true;
+            if((flag_DebugMode || flag_Verbose))
+                printf("%s Flag Set: %s%s%s\n", DEBUG(), COLOR(GREEN), "flag_Pipe", RESET_COLOR());
         }
 
         if(flag == Flags::DebugMode)
@@ -151,6 +185,14 @@ ErrCode FlagsHandler(std::vector<Flag>* flags)
             flag_DebugMode = true;
             if(!flag_NoMessage && !flag_Silent)
                 printf("%s Debug mode enabled!\n", DEBUG());
+            continue;
+        }
+
+        if(flag == Flags::DebugDry)
+        {
+            flag_DebugDry = true;
+            if(!flag_NoMessage && !flag_Silent)
+                printf("%s Nmap will not be run. Instead, the program will attempt to use a pre-existing '.ping' file!\n", DEBUG());
             continue;
         }
     }

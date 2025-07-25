@@ -18,11 +18,16 @@ int main(int argc, char** argv)
     // Add valid flags
     global_ArgumentsParser->AddFlag(Flags::Help);
     global_ArgumentsParser->AddFlag(Flags::Version);
+    global_ArgumentsParser->AddFlag(Flags::Verbose);
+    global_ArgumentsParser->AddFlag(Flags::Timestamp);
     global_ArgumentsParser->AddFlag(Flags::NoColor);
     global_ArgumentsParser->AddFlag(Flags::NoMessage);
     global_ArgumentsParser->AddFlag(Flags::Silent);
+    global_ArgumentsParser->AddFlag(Flags::Minimal);
+    global_ArgumentsParser->AddFlag(Flags::YesDNS);
     global_ArgumentsParser->AddFlag(Flags::Pipe);
     global_ArgumentsParser->AddFlag(Flags::DebugMode);
+    global_ArgumentsParser->AddFlag(Flags::DebugDry);
 
     // Add valid options
     global_ArgumentsParser->AddOption(Options::Output);
