@@ -7,7 +7,6 @@ inline bool flag_DebugMode = false;
 inline bool flag_DebugDry = false;
 
 inline std::string option_OutputFile = "castanet_output";
-inline bool output_file_already_exists = false;
 
 // Contants related to the configuration file
 constexpr const char* constant_ConfigFileLocationUserHome = "~/.castanet_config";
@@ -16,6 +15,7 @@ constexpr const char* constant_ConfigFileLocationEnvironmentVariable = "CASTANET
 
 // I think '~/.castanet_config' is a good default value, should all else fail
 inline std::string option_ConfigFile = constant_ConfigFileLocationUserHome;
+inline bool option_Output_WasSpecified = false;
 
 inline bool flag_NoColor = false;
 inline bool flag_NoMessage = false;
@@ -27,5 +27,7 @@ inline bool flag_IncludeDNS = false;
 inline bool flag_Pipe = false;
 
 inline long long argument_NumberOfHosts = 0;
+
+inline int last_argc_processed = 1;
 
 #endif // ARGUMENT_VARIABLES_H

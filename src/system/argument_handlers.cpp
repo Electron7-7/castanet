@@ -88,6 +88,8 @@ ErrCode OptionsHandler(std::vector<Option>* options)
     {
         if(option == Options::Output)
         {
+            option_Output_WasSpecified = true;
+
             if(!option.HasValue())
                 return Err::Args::MANDATORY_ARGUMENT_OPTION_MISSING;
 
