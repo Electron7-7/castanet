@@ -180,7 +180,7 @@ int main(int argc, char** argv)
                     ip_match_number = 2;
                 }
 
-                output_data += "(" + match.str(ip_match_number) + ")\n";
+                output_data += match.str(ip_match_number) + "\n";
                 continue;
             }
 
