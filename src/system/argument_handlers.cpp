@@ -199,6 +199,18 @@ ErrCode FlagsHandler(std::vector<Flag>* flags)
                 printf("%s Nmap will not be run. Instead, the program will attempt to use a pre-existing '.ping' file!\n", DEBUG());
             continue;
         }
+
+        if(flag == Flags::DebugAll)
+        {
+            flag_DebugAll = true;
+            flag_DebugMode = true;
+            flag_DebugDry = true;
+            flag_Verbose = true;
+            flag_Silent = false;
+            if(!flag_NoMessage && !flag_Silent)
+                printf("%s The program will run through almost everything normally, but will skip nmap as well as any file operations (this is a truly dry run)\n", DEBUG());
+            continue;
+        }
     }
 
     return Err::SUCCESS;

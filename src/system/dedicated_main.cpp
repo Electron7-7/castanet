@@ -38,6 +38,7 @@ int main(int argc, char** argv)
     global_ArgumentsParser->AddFlag(Flags::Pipe);
     global_ArgumentsParser->AddFlag(Flags::DebugMode);
     global_ArgumentsParser->AddFlag(Flags::DebugDry);
+    global_ArgumentsParser->AddFlag(Flags::DebugAll);
 
     // Add valid options
     global_ArgumentsParser->AddOption(Options::Output);
@@ -103,12 +104,15 @@ int main(int argc, char** argv)
     if(!flag_Silent)
         printf("::Running Nmap\n");
 
-    if(!flag_DebugDry)
+    if(!flag_DebugDry && !flag_DebugAll)
         nmap_success = system(nmap_command_line.c_str());
+
+    if(flag_DebugAll)
+        printf("%s Now is when nmap would have run\n", DEBUG());
 
     std::ifstream nmap_temp_file(NMAP_TEMP_OUT);
 
-    if(nmap_success != 0 && !nmap_temp_file)
+    if(!flag_DebugAll && nmap_success != 0 && !nmap_temp_file)
     {
         if(!flag_Silent && !flag_NoMessage)
             printf("%s Unable to read nmap output! Nmap exit code: %d%s\n", ERROR(), nmap_success, RESET_COLOR());
@@ -122,10 +126,14 @@ int main(int argc, char** argv)
     std::string nmap_output;
     std::stringstream nmap_output_buffer;
 
-    nmap_output_buffer << nmap_temp_file.rdbuf();
+    if(!flag_DebugAll)
+        nmap_output_buffer << nmap_temp_file.rdbuf();
+    else
+        printf("%s Now is when 'nmap_output' would have been buffered with the data inside '.ping'\n", DEBUG());
+
     nmap_temp_file.close();
 
-    if(flag_DebugMode)
+    if(!flag_DebugAll && flag_DebugMode)
         printf("%s Nmap output file '%s' will not be deleted\n", DEBUG(), NMAP_TEMP_OUT);
     else
         std::filesystem::remove(std::filesystem::path(NMAP_TEMP_OUT));
@@ -135,6 +143,12 @@ int main(int argc, char** argv)
 
     if(!flag_Silent)
         printf("::Parsing output\n");
+
+    if(flag_DebugAll)
+    {
+        printf("%s This is when all regex operations would have run. Instead, the program will now early return\n", DEBUG());
+        return 0;
+    }
 
     if(flag_DebugMode)
         printf("%s Nmap Output:\n%s%s%s\n", DEBUG(), COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR());

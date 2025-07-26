@@ -5,6 +5,7 @@
 
 inline bool flag_DebugMode = false;
 inline bool flag_DebugDry = false;
+inline bool flag_DebugAll = false;
 
 inline std::string option_OutputFile = "castanet_output";
 

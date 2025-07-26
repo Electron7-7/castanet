@@ -17,6 +17,7 @@ namespace Flags
     const Flag Pipe      ("--pipe", "-p");
     const Flag DebugMode ("--debug");
     const Flag DebugDry  ("--debug-no-nmap");
+    const Flag DebugAll  ("--debug-all");
 }
 
 namespace Options
