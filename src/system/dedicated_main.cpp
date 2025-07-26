@@ -100,6 +100,9 @@ int main(int argc, char** argv)
 
     int nmap_success = 0;
 
+    if(!flag_Silent)
+        printf("::Running Nmap\n");
+
     if(!flag_DebugDry)
         nmap_success = system(nmap_command_line.c_str());
 
@@ -112,6 +115,9 @@ int main(int argc, char** argv)
         nmap_temp_file.close();
         return 1;
     }
+
+    if(!flag_Silent)
+        printf("::Nmap finished\n");
 
     std::string nmap_output;
     std::stringstream nmap_output_buffer;
@@ -126,6 +132,9 @@ int main(int argc, char** argv)
 
     nmap_output = nmap_output_buffer.str();
     nmap_output_buffer.clear();
+
+    if(!flag_Silent)
+        printf("::Parsing output\n");
 
     if(flag_DebugMode)
         printf("%s Nmap Output:\n%s%s%s\n", DEBUG(), COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR());
