@@ -2,7 +2,8 @@
 #define ARGUMENT_HANDLERS_H
 
 #include "common/error_codes.hpp"
-#include "arguments/argument.hpp"
+#include "getargs/argument.hpp"
+
 #include <vector>
 
 ErrCode OptionsHandler(std::vector<Option>* Options);

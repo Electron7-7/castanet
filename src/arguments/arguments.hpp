@@ -1,28 +1,28 @@
 #ifndef ARGUMENTS_H
 #define ARGUMENTS_H
 
-#include "argument.hpp"
+#include "getargs/argument.hpp"
 
 namespace Flags
 {
-    const Flag Help      ("--help", "-h");
-    const Flag Version   ("--version", "-v");
-    const Flag Verbose   ("--verbose", "-V");
-    const Flag Timestamp ("--timestamp", "-t");
-    const Flag NoColor   ("--no-color");
-    const Flag NoMessage ("--no-message");
-    const Flag Silent    ("--silent", "-s");
-    const Flag Minimal   ("--minimal", "-m");
-    const Flag YesDNS    ("--dns-always", "-d");
-    const Flag Pipe      ("--pipe", "-p");
-    const Flag DebugMode ("--debug");
-    const Flag DebugDry  ("--debug-no-nmap");
-    const Flag DebugAll  ("--debug-all");
+    static Flag Help      ("--help", "-h");
+    static Flag Version   ("--version", "-v");
+    static Flag Verbose   ("--verbose", "-V");
+    static Flag Timestamp ("--timestamp", "-t");
+    static Flag NoColor   ("--no-color");
+    static Flag NoMessage ("--no-message");
+    static Flag Silent    ("--silent", "-s");
+    static Flag Minimal   ("--minimal", "-m");
+    static Flag YesDNS    ("--dns-always", "-d");
+    static Flag Pipe      ("--pipe", "-p");
+    static Flag DebugMode ("--debug");
+    static Flag DebugDry  ("--debug-no-nmap");
+    static Flag DebugAll  ("--debug-all");
 }
 
 namespace Options
 {
-    const Option Output    ("--output", "-o", true);
+    static Option Output    ("--output", "-o", true);
 }
 
 constexpr const char* _Help_Printout =

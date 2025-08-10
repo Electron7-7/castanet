@@ -19,10 +19,10 @@ FLAGS_CXX_COMMON      := -std=c++20
 FLAGS_CC_COMMON       := -std=c11
 FLAGS_WINDOWS         := -mwindows -static
 FLAGS_LINUX           := # Nothing yet
-LDFLAGS_LINUX         := # Nothing yet
-LDFLAGS_WINDOWS       := # Nothing yet
+LDFLAGS_LINUX         := -L src/lib -lgetargs_linux
+LDFLAGS_WINDOWS       := -L src/lib -lgetargs_windows
 
-INCLUDE := -I src
+INCLUDE := -I src -I src/include
 
 DIR_ROOT    := build
 DIR_LINUX   := Linux

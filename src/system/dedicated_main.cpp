@@ -1,8 +1,9 @@
 #include "arguments/arguments.hpp"
-#include "arguments/arguments_parser.hpp"
-#include "argument_handlers.hpp"
+#include "getargs/argument_parser.hpp"
 #include "argument_variables.hpp"
+#include "argument_handlers.hpp"
 #include "common/labels.hpp"
+
 #include <filesystem>
 #include <regex>
 #include <unistd.h>
@@ -16,6 +17,25 @@
 #define NMAP_HOSTS " -iR "
 #define NMAP_BG " &>/dev/null"
 
+std::vector<Flag> temp_FlagsVector =
+{
+    Flags::Help,
+    Flags::Version,
+    Flags::Verbose,
+    Flags::Timestamp,
+    Flags::NoColor,
+    Flags::NoMessage,
+    Flags::Silent,
+    Flags::Minimal,
+    Flags::YesDNS,
+    Flags::Pipe,
+    Flags::DebugMode,
+    Flags::DebugDry,
+    Flags::DebugAll
+};
+
+std::vector<Option> temp_OptionsVector = { Options::Output };
+
 int main(int argc, char** argv)
 {
     // FIXME: Copied code
@@ -26,32 +46,32 @@ int main(int argc, char** argv)
     }
 
     // Add valid flags
-    global_ArgumentsParser->AddFlag(Flags::Help);
-    global_ArgumentsParser->AddFlag(Flags::Version);
-    global_ArgumentsParser->AddFlag(Flags::Verbose);
-    global_ArgumentsParser->AddFlag(Flags::Timestamp);
-    global_ArgumentsParser->AddFlag(Flags::NoColor);
-    global_ArgumentsParser->AddFlag(Flags::NoMessage);
-    global_ArgumentsParser->AddFlag(Flags::Silent);
-    global_ArgumentsParser->AddFlag(Flags::Minimal);
-    global_ArgumentsParser->AddFlag(Flags::YesDNS);
-    global_ArgumentsParser->AddFlag(Flags::Pipe);
-    global_ArgumentsParser->AddFlag(Flags::DebugMode);
-    global_ArgumentsParser->AddFlag(Flags::DebugDry);
-    global_ArgumentsParser->AddFlag(Flags::DebugAll);
+    ArgumentParser::AddFlag(&Flags::Help);
+    ArgumentParser::AddFlag(&Flags::Version);
+    ArgumentParser::AddFlag(&Flags::Verbose);
+    ArgumentParser::AddFlag(&Flags::Timestamp);
+    ArgumentParser::AddFlag(&Flags::NoColor);
+    ArgumentParser::AddFlag(&Flags::NoMessage);
+    ArgumentParser::AddFlag(&Flags::Silent);
+    ArgumentParser::AddFlag(&Flags::Minimal);
+    ArgumentParser::AddFlag(&Flags::YesDNS);
+    ArgumentParser::AddFlag(&Flags::Pipe);
+    ArgumentParser::AddFlag(&Flags::DebugMode);
+    ArgumentParser::AddFlag(&Flags::DebugDry);
+    ArgumentParser::AddFlag(&Flags::DebugAll);
 
     // Add valid options
-    global_ArgumentsParser->AddOption(Options::Output);
+    ArgumentParser::AddOption(&Options::Output);
 
     // Parse all arguments
-    global_ArgumentsParser->ParseArguments(argc, argv);
+    ArgumentParser::ParseArguments(argc, argv);
 
     // Handle flags
-    if(unsigned short return_value = FlagsHandler(global_ArgumentsParser->GetFlags()) != Err::SUCCESS)
+    if(unsigned short return_value = FlagsHandler(&temp_FlagsVector) != Err::SUCCESS)
         return return_value;
 
     // Handle options
-    if(unsigned short return_value = OptionsHandler(global_ArgumentsParser->GetOptions()) != Err::SUCCESS)
+    if(unsigned short return_value = OptionsHandler(&temp_OptionsVector) != Err::SUCCESS)
         return return_value;
 
     // FIXME: Copied code
