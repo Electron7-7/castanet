@@ -1,13 +1,15 @@
-#include "arguments/arguments.hpp"
-#include "getargs/argument_parser.hpp"
-#include "argument_variables.hpp"
-#include "argument_handlers.hpp"
+#include "arguments.hpp"
+#include "printouts.hpp"
+#include "file_handling.hpp"
 #include "common/labels.hpp"
+#include "getargs/argument_parser.hpp"
 
-#include <filesystem>
-#include <regex>
-#include <unistd.h>
+#include <print>
+#include <string>
 #include <fstream>
+#include <filesystem>
+#include <unistd.h>
+#include <regex>
 
 #define NMAP "/usr/bin/nmap"
 #define NMAP_PORTS "21-25,42,53,80,135-139,443-445,890,1337,1433-1434,1512,3398,5555,8080,9090"
@@ -17,39 +19,17 @@
 #define NMAP_HOSTS " -iR "
 #define NMAP_BG " &>/dev/null"
 
-std::vector<Flag> temp_FlagsVector =
-{
-    Flags::Help,
-    Flags::Version,
-    Flags::Verbose,
-    Flags::Timestamp,
-    Flags::NoColor,
-    Flags::NoMessage,
-    Flags::Silent,
-    Flags::Minimal,
-    Flags::YesDNS,
-    Flags::Pipe,
-    Flags::DebugMode,
-    Flags::DebugDry,
-    Flags::DebugAll
-};
-
-std::vector<Option> temp_OptionsVector = { Options::Output };
+std::string constant_ConfigFileLocationEnvironmentVariable = "CASTANET_OUTPUT";
+std::string constant_DefaultOutputFile = "castanet_output";
 
 int main(int argc, char** argv)
 {
-    // FIXME: Copied code
-    if(argc <= 1)
-    {
-        printf("%s\n    %s\n", _Help_Printout, _Version_Printout);
-        return 1;
-    }
-
     // Add valid flags
     ArgumentParser::AddFlag(&Flags::Help);
     ArgumentParser::AddFlag(&Flags::Version);
     ArgumentParser::AddFlag(&Flags::Verbose);
     ArgumentParser::AddFlag(&Flags::Timestamp);
+    ArgumentParser::AddFlag(&Flags::DryRun);
     ArgumentParser::AddFlag(&Flags::NoColor);
     ArgumentParser::AddFlag(&Flags::NoMessage);
     ArgumentParser::AddFlag(&Flags::Silent);
@@ -64,22 +44,32 @@ int main(int argc, char** argv)
     ArgumentParser::AddOption(&Options::Output);
 
     // Parse all arguments
-    ArgumentParser::ParseArguments(argc, argv);
+    int last_argc_processed = ArgumentParser::ParseArguments(argc, argv);
 
-    // Handle flags
-    if(unsigned short return_value = FlagsHandler(&temp_FlagsVector) != Err::SUCCESS)
-        return return_value;
-
-    // Handle options
-    if(unsigned short return_value = OptionsHandler(&temp_OptionsVector) != Err::SUCCESS)
-        return return_value;
-
-    // FIXME: Copied code
-    if(++last_argc_processed >= argc)
+    if(last_argc_processed == ARG_STATUS_FAILED || last_argc_processed >= argc || Flags::Help.IsActive())
     {
-        printf("%s\n    %s\n", _Help_Printout, _Version_Printout);
-        return 1;
+        std::print("{}\n    {}\n", _Help_Printout, _Version_Printout);
+        return (Flags::Help.IsActive()) ? 0 : 1; // '--help' should return '0', no final argument should return '1'
     }
+
+    if(Flags::Pipe.IsActive())
+    {
+        Flags::DryRun.Activate();
+        Flags::NoColor.Activate();
+        Flags::Minimal.Activate();
+    }
+
+    bool use_environment_variable = true;
+
+    if(Options::Output.IsActive())
+        use_environment_variable = try_SetOutputFile(Options::Output.GetValue());
+
+    if(use_environment_variable)
+        try_SetOutputFile(getenv(constant_ConfigFileLocationEnvironmentVariable.c_str()), true);
+    else
+        try_SetOutputFile(constant_DefaultOutputFile.c_str());
+
+    long argument_NumberOfHosts = 0;
 
     try
     {
@@ -87,99 +77,81 @@ int main(int argc, char** argv)
     }
     catch(std::invalid_argument const& exception)
     {
-        if(!flag_Silent && !flag_NoMessage)
-            printf("%s Invalid number of hosts: '%s'%s\n", ERROR(), argv[last_argc_processed], RESET_COLOR());
-        return 1;
-    }
-
-    // FIXME: Copied code
-    if(argument_NumberOfHosts <= 0)
-    {
-        printf("%s\n    %s\n", _Help_Printout, _Version_Printout);
+        PRINT_MESSAGE("{} Invalid number of hosts: '{}'{}\n", ERROR(), argv[last_argc_processed], RESET_COLOR())
         return 1;
     }
 
     if(access("/usr/bin/nmap", X_OK) != 0)
     {
-        if(!flag_Silent && !flag_NoMessage)
-            printf("%s Nmap not installed! Please install nmap%s\n", ERROR(), RESET_COLOR());
+        PRINT_MESSAGE("{} Nmap not installed! Please install nmap{}\n", ERROR(), RESET_COLOR())
         return 1;
     }
 
-    const char* output_file_var = getenv(constant_ConfigFileLocationEnvironmentVariable);
-
-    if(output_file_var != nullptr && !option_Output_WasSpecified)
-        try_SetOutputFile(output_file_var);
-
     std::string nmap_command_line = (NMAP NMAP_ARGS NMAP_HOSTS) + std::to_string(argument_NumberOfHosts) + (NMAP_OUT_FLAG NMAP_TEMP_OUT);
 
-    if(!flag_Verbose)
+    if(!Flags::Verbose.IsActive())
         nmap_command_line += NMAP_BG;
 
-    if(flag_Verbose)
-        printf("::Nmap Command: %s\n", nmap_command_line.c_str());
+    if(Flags::Verbose.IsActive())
+        PRINT_OUT("::Nmap Command: {}\n", nmap_command_line.c_str());
 
     int nmap_success = 0;
 
-    if(!flag_Silent)
-        printf("::Running Nmap\n");
+    PRINTOUT("::Running Nmap\n")
 
-    if(!flag_DebugDry && !flag_DebugAll)
+    if(!Flags::DebugDry.IsActive() && !Flags::DebugAll.IsActive())
         nmap_success = system(nmap_command_line.c_str());
 
-    if(flag_DebugAll)
-        printf("%s Now is when nmap would have run\n", DEBUG());
+    if(Flags::DebugAll.IsActive())
+        std::print("{} Now is when nmap would have run\n", DEBUG());
 
     std::ifstream nmap_temp_file(NMAP_TEMP_OUT);
 
-    if(!flag_DebugAll && nmap_success != 0 && !nmap_temp_file)
+    if(!Flags::DebugAll.IsActive() && nmap_success != 0 && !nmap_temp_file)
     {
-        if(!flag_Silent && !flag_NoMessage)
-            printf("%s Unable to read nmap output! Nmap exit code: %d%s\n", ERROR(), nmap_success, RESET_COLOR());
+        std::print("{} Unable to read nmap output! Nmap exit code: %d{}\n", ERROR(), nmap_success, RESET_COLOR());
         nmap_temp_file.close();
         return 1;
     }
 
-    if(!flag_Silent)
-        printf("::Nmap finished\n");
+    PRINTOUT("::Nmap finished\n")
 
     std::string nmap_output;
     std::stringstream nmap_output_buffer;
 
-    if(!flag_DebugAll)
+    if(!Flags::DebugAll.IsActive())
         nmap_output_buffer << nmap_temp_file.rdbuf();
     else
-        printf("%s Now is when 'nmap_output' would have been buffered with the data inside '.ping'\n", DEBUG());
+        std::print("{} Now is when 'nmap_output' would have been buffered with the data inside '.ping'\n", DEBUG());
 
     nmap_temp_file.close();
 
-    if(!flag_DebugAll && flag_DebugMode)
-        printf("%s Nmap output file '%s' will not be deleted\n", DEBUG(), NMAP_TEMP_OUT);
+    if(!Flags::DebugAll.IsActive() && Flags::DebugMode.IsActive())
+        std::print("{} Nmap output file '{}' will not be deleted\n", DEBUG(), NMAP_TEMP_OUT);
     else
         std::filesystem::remove(std::filesystem::path(NMAP_TEMP_OUT));
 
     nmap_output = nmap_output_buffer.str();
     nmap_output_buffer.clear();
 
-    if(!flag_Silent)
-        printf("::Parsing output\n");
+    PRINTOUT("::Parsing output\n")
 
-    if(flag_DebugAll)
+    if(Flags::DebugAll.IsActive())
     {
-        printf("%s This is when all regex operations would have run. Instead, the program will now early return\n", DEBUG());
+        std::print("{} This is when all regex operations would have run. Instead, the program will now early return\n", DEBUG());
         return 0;
     }
 
-    if(flag_DebugMode)
-        printf("%s Nmap Output:\n%s%s%s\n", DEBUG(), COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR());
+    if(Flags::DebugMode.IsActive())
+        std::print("{} Nmap Output:\n{}{}{}\n", DEBUG(), COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR());
 
     std::regex header_footer_pattern(R"(\n?#.+\n)");
     std::string output_data = std::regex_replace(nmap_output, header_footer_pattern, "", std::regex_constants::match_any);
 
-    if(flag_DebugMode)
-        printf("%s Output Data After Removing Header and Footer: \n%s%s%s\n", DEBUG(), COLOR(YELLOW), output_data.c_str(), RESET_COLOR());
+    if(Flags::DebugMode.IsActive())
+        std::print("{} Output Data After Removing Header and Footer: \n{}{}{}\n", DEBUG(), COLOR(YELLOW), output_data.c_str(), RESET_COLOR());
 
-    if(flag_AddTimestamp && !flag_Pipe)
+    if(Flags::Timestamp.IsActive() && !Flags::Pipe.IsActive())
     {
         std::smatch timestamp_matches;
         std::regex timestamp_pattern(R"(^#.+(\w{3,5} \w+ \d{2} (\d{2}:?){3} \d+))");
@@ -187,17 +159,17 @@ int main(int argc, char** argv)
 
         output_data.insert(0, "[Timestamp: " + std::string(timestamp_matches.str(1)) + "]\n");
 
-        if(flag_DebugMode)
-            printf("%s Output Data After Adding Timestamp: \n%s%s%s\n", DEBUG(), COLOR(YELLOW), output_data.c_str(), RESET_COLOR());
+        if(Flags::DebugMode.IsActive())
+            std::print("{} Output Data After Adding Timestamp: \n{}{}{}\n", DEBUG(), COLOR(YELLOW), output_data.c_str(), RESET_COLOR());
     }
 
-    if(flag_Minimal)
+    if(Flags::Minimal.IsActive())
     {
-        if(flag_AddTimestamp && (!flag_NoMessage && !flag_Silent))
-            printf("%s A timestamp will be added to the output;  if you want to pipe output to another program, use the pipe flag [-p|--pipe])%s\n", WARN(), RESET_COLOR());
+        if(Flags::Timestamp.IsActive())
+            PRINT_MESSAGE("{} A timestamp will be added to the output;  if you want to pipe output to another program, use the pipe flag [-p|--pipe]){}\n", WARN(), RESET_COLOR())
 
-        if(flag_IncludeDNS && (!flag_NoMessage && !flag_Silent))
-            printf("%s DNS names will be added to the output (as well as newlines); if you want to pipe output to another program, use the pipe flag [-p|--pipe]'%s\n", WARN(), RESET_COLOR());
+        if(Flags::YesDNS.IsActive())
+            PRINT_MESSAGE("{} DNS names will be added to the output (as well as newlines); if you want to pipe output to another program, use the pipe flag [-p|--pipe]'{}\n", WARN(), RESET_COLOR())
 
         std::string output_data_copy = output_data;
         output_data = "";
@@ -213,7 +185,7 @@ int main(int argc, char** argv)
         {
             std::smatch match = *i;
 
-            if(flag_IncludeDNS && !flag_Pipe)
+            if(Flags::YesDNS.IsActive() && !Flags::Pipe.IsActive())
             {
                 if(!match.str(1).empty())
                     output_data += match.str(1) + " ";
@@ -222,8 +194,8 @@ int main(int argc, char** argv)
                 continue;
             }
 
-            if(flag_DebugMode)
-                printf("%s Matches: %sCapture Group 0: '%s' Capture Group 1: '%s' Capture Group 2: '%s'%s\n", DEBUG(), COLOR(GREEN), match.str().c_str(), match.str(1).c_str(), match.str(2).c_str(), RESET_COLOR());
+            if(Flags::DebugMode.IsActive())
+                std::print("{} Matches: {}Capture Group 0: '{}' Capture Group 1: '{}' Capture Group 2: '{}'{}\n", DEBUG(), COLOR(GREEN), match.str().c_str(), match.str(1).c_str(), match.str(2).c_str(), RESET_COLOR());
 
             std::string ip_address = match.str(2);
             output_data += ip_address + "\n";
@@ -231,19 +203,18 @@ int main(int argc, char** argv)
 
         output_data += "\n";
 
-        if(flag_DebugMode)
-            printf("%s Output Data After Minimizing: \n%s%s%s\n", DEBUG(), COLOR(YELLOW), output_data.c_str(), RESET_COLOR());
+        if(Flags::DebugMode.IsActive())
+            std::print("{} Output Data After Minimizing: \n{}{}{}\n", DEBUG(), COLOR(YELLOW), output_data.c_str(), RESET_COLOR());
     }
 
     else
         output_data += "\n";
 
-    std::ofstream castanet_output_file(option_OutputFile, std::ios::app);
+    std::ofstream castanet_output_file(Options::Output.GetValue(), std::ios::app);
 
     if(output_data.empty())
     {
-        if(!flag_NoMessage && !flag_Silent)
-            printf("::No valid hosts found!\n");
+        PRINTOUT("::No valid hosts found!\n");
 
         castanet_output_file.close(); // FIXME: is this allowed?
         return 0;
@@ -251,21 +222,49 @@ int main(int argc, char** argv)
 
     if(!castanet_output_file)
     {
-        if(!flag_Silent)
-        {
-            printf("%s Output file '%s' is unable to be opened/written to! The program will print nmap's captured output before aborting.%s\n", ERROR(), option_OutputFile.c_str(), RESET_COLOR());
-            printf("\n%sNmap Output:%s\n%s\n", COLOR_BOLD(GREEN), RESET_COLOR(), nmap_output.c_str());
-        }
+        PRINT_MESSAGE("{} Output file '{}' is unable to be opened/written to! The program will print nmap's captured output before aborting.\n{}Nmap Output:{}\n{}\n", ERROR(), Options::Output.GetValue(), COLOR_BOLD(GREEN), RESET_COLOR(), nmap_output);
 
         castanet_output_file.close(); // FIXME: is this allowed?
         return 1;
     }
 
-    castanet_output_file << output_data;
-    castanet_output_file.close();
+    if(Flags::DryRun.IsActive())
+        std::print("{}\n", output_data);
+    else
+    {
+        castanet_output_file << output_data;
+        castanet_output_file.close();
 
-    if(!flag_Silent)
-        printf("::Castanet Finished\n");
+        PRINTOUT("::Castanet Finished\n")
+    }
 
     return 0;
+}
+
+FileStatus CheckFilePath(const std::string& wish_file_name = "")
+{
+    if(wish_file_name.empty())
+        return FileStatus::FAILURE;
+
+    // TODO: remove the std::filesystem code, as the filestreams will fail if the directory doesn't exist, anyways (i think...)
+    std::filesystem::path wish_filepath = std::filesystem::absolute(std::filesystem::path(wish_file_name));
+
+    if(exists(wish_filepath.remove_filename()))
+    {
+        std::ifstream file_already_exists(wish_filepath.string());
+        if(file_already_exists)
+        {
+            file_already_exists.close();
+            return FileStatus::SUCCESS_FILE_EXISTS;
+        }
+
+        std::ofstream can_write_to_file(wish_filepath.string());
+        if(can_write_to_file)
+        {
+            can_write_to_file.close();
+            return FileStatus::SUCCESS_FILE_CREATED;
+        }
+    }
+
+    return FileStatus::FAILURE;
 }
