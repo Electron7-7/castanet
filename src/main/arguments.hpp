@@ -56,6 +56,6 @@ R"~(    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--dry-run]
         castanet -p 40 | nmap -sC -sV -Pn -oN huge_scan -iL -
 )~";
 
-constexpr const char* _Version_Printout = "castanet v2.1.4";
+constexpr const char* _Version_Printout = "castanet v2.1.5";
 
 #endif // ARGUMENTS_H
