@@ -66,10 +66,7 @@ VPATH := $(SRC_DIRS)
 
 SRC := src
 
-SRC_DIRS :=          \
-    $(SRC)/arguments \
-    $(SRC)/system    \
-
+SRC_DIRS := $(SRC)/main
 
 CC_SRCS  := $(foreach directory,$(SRC_DIRS),$(wildcard $(directory)/*.c))
 CXX_SRCS := $(foreach directory,$(SRC_DIRS),$(wildcard $(directory)/*.cpp))
