@@ -1,18 +1,24 @@
 #ifndef COLORS_H
 #define COLORS_H
 
-#define BLACK   "30"
-#define RED     "31"
-#define GREEN   "32"
-#define YELLOW  "33"
-#define BLUE    "34"
-#define MAGENTA "35"
-#define CYAN    "36"
-#define WHITE   "37"
-#define DEFAULT "39"
+#include <string>
 
-#define COLOR_RESET "\x1b[0m"
-#define COLOR(color) "\x1b[" color "m"
-#define COLOR_BOLD(color) "\x1b[1;" color "m"
+constexpr const char* BLACK   = "30";
+constexpr const char* RED     = "31";
+constexpr const char* GREEN   = "32";
+constexpr const char* YELLOW  = "33";
+constexpr const char* BLUE    = "34";
+constexpr const char* MAGENTA = "35";
+constexpr const char* CYAN    = "36";
+constexpr const char* WHITE   = "37";
+constexpr const char* DEFAULT = "39";
+
+constexpr const char* COLOR_RESET = "\x1b[0m";
+
+constexpr std::string COLOR(std::string Color)
+{ return "\x1b[" + Color + "m"; }
+
+constexpr std::string COLOR_BOLD(std::string Color)
+{ return "\x1b[1;" + Color + "m"; }
 
 #endif // COLORS_H
