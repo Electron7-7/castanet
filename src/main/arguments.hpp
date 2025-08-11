@@ -1,0 +1,61 @@
+#ifndef ARGUMENTS_H
+#define ARGUMENTS_H
+
+#include "getargs/argument.hpp"
+
+namespace Flags
+{
+    static Flag Help      ("--help", "-h");
+    static Flag Version   ("--version", "-v");
+    static Flag Verbose   ("--verbose", "-V");
+    static Flag Timestamp ("--timestamp", "-t");
+    static Flag DryRun    ("--dry-run", "-n");
+    static Flag NoColor   ("--no-color");
+    static Flag NoMessage ("--no-message");
+    static Flag Silent    ("--silent", "-s");
+    static Flag Minimal   ("--minimal", "-m");
+    static Flag YesDNS    ("--dns-always", "-d");
+    static Flag Pipe      ("--pipe", "-p");
+    static Flag DebugMode ("--debug");
+    static Flag DebugDry  ("--debug-no-nmap");
+    static Flag DebugAll  ("--debug-all");
+}
+
+namespace Options
+{
+    static Option Output    ("--output", "-o", true);
+}
+
+constexpr const char* _Help_Printout =
+R"~(    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--dry-run]
+                    [--no-color] [--no-message] [-s|--silent] [-m|--minimal]
+                    [-p|--pipe] [-o|--output <path>] <number_of_hosts>
+    Options:
+        -h, --help           print help document
+        -v, --version        print program version
+        -V, --verbose        make nmap output visible
+        -t, --timestamp      output includes a small timestamp at the beginning (overriden by '-m')
+        -n, --dry-run        do not write output to a file
+            --no-color       remove colors from terminal output
+            --no-message     suppress only [WARNING], [ERROR], and [DEBUG] messages
+        -s, --silent         suppress all terminal printouts (no effect on output file)
+        -m, --minimal        only output valid host addresses
+        -d, --dns-always     always include DNS names in the output file (mainly used with '-m')
+        -p, --pipe           same as '--dry-run --no-color --silent --minimal' (designed for piping)
+        -o, --output FILE    override the output destination file
+
+    Environment:
+        CASTANET_OUTPUT
+            Absolute path to the default output file. Unless overwritten by '-n' or '-o', this environment variable
+            will always be used as the output location. If the path is invalid, output is redirected to 'castanet_output'
+            in the current working directory.
+
+    Example:
+        castanet 14
+        castanet -o local_castanet_output 2000
+        castanet -p 40 | nmap -sC -sV -Pn -oN huge_scan -iL -
+)~";
+
+constexpr const char* _Version_Printout = "castanet v2.1.5";
+
+#endif // ARGUMENTS_H
