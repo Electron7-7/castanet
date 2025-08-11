@@ -1,4 +1,4 @@
-#include "file_handling.hpp"
+#include "output_file.hpp"
 
 bool try_SetOutputFile(const char* wish_output_file, bool suppress_printouts)
 {
@@ -10,7 +10,7 @@ bool try_SetOutputFile(const char* wish_output_file, bool suppress_printouts)
     case FileStatus::FAILURE:
         if(!suppress_printouts && ALLOW_MESSAGE())
             std::print("{} Cannot write output to '{}'{}\n", WARN(), wish_output_file, RESET_COLOR());
-        new_output_file = getenv(constant_ConfigFileLocationEnvironmentVariable.c_str());
+        new_output_file = getenv(constant_ConfigFileLocationEnvironmentVariable);
         if(!new_output_file)
             try_SetOutputFile(Options::Output.GetValue(), suppress_printouts);
         return false;
@@ -29,3 +29,4 @@ bool try_SetOutputFile(const char* wish_output_file, bool suppress_printouts)
         return true;
     }
 }
+

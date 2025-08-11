@@ -1,6 +1,6 @@
 #include "arguments.hpp"
 #include "printouts.hpp"
-#include "file_handling.hpp"
+#include "output_file.hpp"
 #include "common/labels.hpp"
 #include "getargs/argument_parser.hpp"
 
@@ -18,9 +18,6 @@
 #define NMAP_TEMP_OUT ".ping"
 #define NMAP_HOSTS " -iR "
 #define NMAP_BG " &>/dev/null"
-
-std::string constant_ConfigFileLocationEnvironmentVariable = "CASTANET_OUTPUT";
-std::string constant_DefaultOutputFile = "castanet_output";
 
 int main(int argc, char** argv)
 {
@@ -65,9 +62,9 @@ int main(int argc, char** argv)
         use_environment_variable = try_SetOutputFile(Options::Output.GetValue());
 
     if(use_environment_variable)
-        try_SetOutputFile(getenv(constant_ConfigFileLocationEnvironmentVariable.c_str()), true);
+        try_SetOutputFile(getenv(constant_ConfigFileLocationEnvironmentVariable), true);
     else
-        try_SetOutputFile(constant_DefaultOutputFile.c_str());
+        try_SetOutputFile(constant_DefaultOutputFile);
 
     long argument_NumberOfHosts = 0;
 
@@ -134,17 +131,6 @@ int main(int argc, char** argv)
     nmap_output = nmap_output_buffer.str();
     nmap_output_buffer.clear();
 
-    PRINTOUT("::Parsing output\n")
-
-    if(Flags::DebugAll.IsActive())
-    {
-        std::print("{} This is when all regex operations would have run. Instead, the program will now early return\n", DEBUG());
-        return 0;
-    }
-
-    if(Flags::DebugMode.IsActive())
-        std::print("{} Nmap Output:\n{}{}{}\n", DEBUG(), COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR());
-
     std::regex header_footer_pattern(R"(\n?#.+\n)");
     std::string output_data = std::regex_replace(nmap_output, header_footer_pattern, "", std::regex_constants::match_any);
 
@@ -210,6 +196,17 @@ int main(int argc, char** argv)
     else
         output_data += "\n";
 
+    if(Flags::DebugMode.IsActive())
+        std::print("{} Nmap Output:\n{}{}{}\n", DEBUG(), COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR());
+
+    if(Flags::DebugAll.IsActive())
+    {
+        std::print("{} This is when all regex operations would have run. Instead, the program will now early return\n", DEBUG());
+        return 0;
+    }
+
+    PRINTOUT("::Parsing output\n")
+
     std::ofstream castanet_output_file(Options::Output.GetValue(), std::ios::app);
 
     if(output_data.empty())
@@ -239,32 +236,4 @@ int main(int argc, char** argv)
     }
 
     return 0;
-}
-
-FileStatus CheckFilePath(const std::string& wish_file_name = "")
-{
-    if(wish_file_name.empty())
-        return FileStatus::FAILURE;
-
-    // TODO: remove the std::filesystem code, as the filestreams will fail if the directory doesn't exist, anyways (i think...)
-    std::filesystem::path wish_filepath = std::filesystem::absolute(std::filesystem::path(wish_file_name));
-
-    if(exists(wish_filepath.remove_filename()))
-    {
-        std::ifstream file_already_exists(wish_filepath.string());
-        if(file_already_exists)
-        {
-            file_already_exists.close();
-            return FileStatus::SUCCESS_FILE_EXISTS;
-        }
-
-        std::ofstream can_write_to_file(wish_filepath.string());
-        if(can_write_to_file)
-        {
-            can_write_to_file.close();
-            return FileStatus::SUCCESS_FILE_CREATED;
-        }
-    }
-
-    return FileStatus::FAILURE;
 }

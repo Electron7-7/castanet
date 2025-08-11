@@ -2,7 +2,7 @@
 #define LABELS_H
 
 #include "colors.hpp"
-#include "system/arguments.hpp"
+#include "main/arguments.hpp"
 
 #define LABEL_ERROR "[ERROR]"
 #define LABEL_WARN  "[WARNING]"

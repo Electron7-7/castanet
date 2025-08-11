@@ -1,6 +1,8 @@
 #ifndef PRINTOUTS_H
 #define PRINTOUTS_H
 
+#include "arguments.hpp"
+
 inline bool ALLOW_PRINTOUT() { return (!Flags::Silent.IsActive() && !Flags::DryRun.IsActive()); }
 inline bool ALLOW_MESSAGE()  { return (ALLOW_PRINTOUT() && !Flags::NoMessage.IsActive()); }
 

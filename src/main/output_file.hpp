@@ -10,4 +10,7 @@ enum class FileStatus
     SUCCESS_FILE_CREATED = 0b10,
 };
 
+constexpr const char* constant_ConfigFileLocationEnvironmentVariable = "CASTANET_OUTPUT";
+constexpr const char* constant_DefaultOutputFile = "castanet_output";
+
 #endif // FILE_HANDLING_H
