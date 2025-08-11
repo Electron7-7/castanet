@@ -1,4 +1,42 @@
 #include "output_file.hpp"
+#include "arguments.hpp"
+#include "printouts.hpp"
+#include "common/labels.hpp"
+#include "getargs/argument.hpp"
+
+#include <string>
+#include <filesystem>
+#include <fstream>
+#include <print>
+
+FileStatus CheckFilePath(const std::string& wish_file_name = "")
+{
+    if(wish_file_name.empty())
+        return FileStatus::FAILURE;
+
+    // TODO: remove the std::filesystem code, as the filestreams will fail if the directory doesn't exist, anyways (i think...)
+    std::filesystem::path wish_filepath = std::filesystem::absolute(std::filesystem::path(wish_file_name));
+
+    if(exists(wish_filepath.remove_filename()))
+    {
+        std::ifstream file_already_exists(wish_filepath.string());
+        if(file_already_exists)
+        {
+            file_already_exists.close();
+            return FileStatus::SUCCESS_FILE_EXISTS;
+        }
+
+        std::ofstream can_write_to_file(wish_filepath.string());
+        if(can_write_to_file)
+        {
+            can_write_to_file.close();
+            return FileStatus::SUCCESS_FILE_CREATED;
+        }
+    }
+
+    return FileStatus::FAILURE;
+}
+
 
 bool try_SetOutputFile(const char* wish_output_file, bool suppress_printouts)
 {
