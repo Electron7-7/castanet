@@ -1,33 +1,19 @@
-# castanet v2.0
-```
-    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--dry-run]
-                    [--no-color] [--no-message] [-s|--silent] [-m|--minimal]
-                    [-p|--pipe] [-o|--output <path>] <number_of_hosts>
-    Options:
-        -h, --help           print help document
-        -v, --version        print program version
-        -V, --verbose        make nmap output visible
-        -t, --timestamp      output includes a small timestamp at the beginning (overriden by '-m')
-        -n, --dry-run        do not write output to a file
-            --no-color       remove colors from terminal output
-            --no-message     suppress only [WARNING], [ERROR], and [DEBUG] messages
-        -s, --silent         suppress all terminal printouts (no effect on output file)
-        -m, --minimal        only output valid host addresses
-        -d, --dns-always     always include DNS names in the output file (mainly used with '-m')
-        -p, --pipe           same as '--dry-run --no-color --silent --minimal' (designed for piping)
-        -o, --output FILE    override the output destination file
+# castanet
+A fun little web-scraper, that doesn't discriminate.
 
-    Environment:
-        CASTANET_OUTPUT
-            Absolute path to the default output file. Unless overwritten by '-n' or '-o', this environment variable
-            will always be used as the output location. If the path is invalid, output is redirected to the file
-            "castanet_output", in the current working directory.
+## Note for Windows Users
+I haven't tested the pre-compiled .exe files on Windows, so your mileage may vary. I'm also not paying to sign my code, so you'll probably wanna compile it yourself using MSYS2, anyways (otherwise, Windows Defender throws a huge fit).
 
-    Example:
-        castanet 14
-        castanet -o local_castanet_output 2000
-        castanet -p 40 | nmap -sC -sV -Pn -oN huge_scan -iL -
-```
+## What does it do?
+Castanet started life as a simple script, first in Bash, then in Python, and even though it's now a fully fledged C++20 program... it's not that much more complex. The main function of castanet is running `nmap`; yeah, that's, like, 80% of the entire thing. The other 20% is formatting the output and storing it in a file. The magic comes from *how* castanet runs `nmap`. When I first wrote the little bugger back in ~2021-2022, I picked out a few ports that had potential for hiding some juicy secrets, and made a script that would let me pick any number of random hosts to scan, checking if any of those juicy ports were open. Not much has changed, not even the port choices; castanet is designed to be a very small program that slowly, over time, can build you a massive list of IPv4 addresses (and even DNS names!) that might be fun to poke at, so why not build yourself a phonebook of interesting computers, close your eyes, and see where your finger lands?
 
-## What's New in Version Two?
-Quite a lot, actually. Castanet is no longer a single script; instead, it's a fully compiled binary written in C++20. It has full argument parsing and handling, a lot more options, an environment variable for setting a different default output file location, and a lot more! Check the help printout for more details, or just use the damn thing yourself! :D
+Cast yourself a little net over... well, the net!
+
+## What's next?
+
+I'd like to add a few quality of life changes, including:
+- A status bar/message while `nmap` is running
+- The ability to change the `nmap` command
+    - Either via environment variable, program flags, or both
+- Maybe an option to use `-Pn` with `sudo`, for better results
+- More colors???...
