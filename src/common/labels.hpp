@@ -8,25 +8,25 @@
 #define LABEL_WARN  "[WARNING]"
 #define LABEL_DEBUG "[DEBUG]"
 
-static const char* ERROR()
+static std::string ERROR()
 {
     if(Flags::NoColor.IsActive())
         return LABEL_ERROR;
-    return COLOR_BOLD(RED) LABEL_ERROR;
+    return COLOR_BOLD(RED) + LABEL_ERROR;
 }
 
-static const char* WARN()
+static std::string WARN()
 {
     if(Flags::NoColor.IsActive())
         return LABEL_WARN;
-    return COLOR_BOLD(YELLOW) LABEL_WARN;
+    return COLOR_BOLD(YELLOW) + LABEL_WARN;
 }
 
-static const char* DEBUG()
+static std::string DEBUG()
 {
     if(Flags::NoColor.IsActive())
         return LABEL_DEBUG;
-    return COLOR_BOLD(DEFAULT) LABEL_DEBUG COLOR_RESET;
+    return COLOR_BOLD(DEFAULT) + LABEL_DEBUG + COLOR_RESET;
 }
 
 static const char* RESET_COLOR()
