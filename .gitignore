@@ -12,3 +12,7 @@ tests/
 
 # castanet temporary output
 .ping
+
+# SublimeText project files
+castanet.sublime-project
+castanet.sublime-workspace
