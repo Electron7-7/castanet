@@ -2,8 +2,8 @@ LINUX_CXX := clang++
 LINUX_CC  := clang
 
 ifneq ($(OS),Windows_NT)
-	WINDOWS_CXX := x86_64-w64-mingw32-g++
-	WINDOWS_CC  := x86_64-w64-mingw32-gcc
+	WINDOWS_CXX := i686-w64-mingw32-g++
+	WINDOWS_CC  := i686-w64-mingw32-gcc
 else
 	WINDOWS_CXX := g++
 	WINDOWS_CC  := gcc
@@ -16,11 +16,11 @@ FLAGS_RELEASE_COMMON  := -O3
 FLAGS_RELEASE_WINDOWS := # Nothing yet
 FLAGS_RELEASE_LINUX   := # Nothing yet
 FLAGS_CXX_COMMON      := -std=c++23
-FLAGS_CC_COMMON       := -std=c11
-FLAGS_WINDOWS         := -mwindows -static
+FLAGS_CC_COMMON       := # Nothing yet
+FLAGS_WINDOWS         := -static
 FLAGS_LINUX           := # Nothing yet
 LDFLAGS_LINUX         := -L src/lib -lgetargs_linux
-LDFLAGS_WINDOWS       := -L src/lib -lgetargs_windows
+LDFLAGS_WINDOWS       := -lstdc++exp -L src/lib -lgetargs_windows
 
 INCLUDE := -I src -I src/include
 

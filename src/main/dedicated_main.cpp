@@ -1,6 +1,6 @@
+#include "printouts.hpp"
 #include "arguments.hpp"
 #include "regex_operations.hpp"
-#include "printouts.hpp"
 #include "output_file.hpp"
 #include "common/labels.hpp"
 #include "getargs/argument_parser.hpp"
@@ -51,20 +51,39 @@ int main(int argc, char** argv)
 
     if(Flags::Pipe.IsActive())
     {
+        Flags::Silent.Activate();
         Flags::DryRun.Activate();
         Flags::NoColor.Activate();
         Flags::Minimal.Activate();
     }
 
-    bool use_environment_variable = true;
+    if(Flags::DebugAll.IsActive())
+    {
+        Flags::DebugMode.Activate();
+        Flags::DebugDry.Activate();
+    }
 
-    if(Options::Output.IsActive())
-        use_environment_variable = try_SetOutputFile(Options::Output.GetValue());
+    if(Flags::DebugMode.IsActive())
+        Flags::Verbose.Activate();
 
-    if(use_environment_variable)
-        try_SetOutputFile(getenv(constant_ConfigFileLocationEnvironmentVariable), true);
-    else
-        try_SetOutputFile(constant_DefaultOutputFile);
+    std::string try_output_location = Options::Output.GetValue();
+
+    if(!Options::Output.HasValue())
+    {
+        PRINTDEBUG("Choosing the default output file location\n")
+        PRINT_DEBUG("Starting by trying the environment variable '{}'\n", constant_ConfigFileLocationEnvironmentVariable)
+        const char* try_environment_variable = getenv(constant_ConfigFileLocationEnvironmentVariable);
+
+        if(try_environment_variable != NULL)
+        { try_output_location = try_environment_variable; }
+        else
+        { PRINT_DEBUG("Environment variable '{}' is unset. Using the default output location '{}'\n", constant_ConfigFileLocationEnvironmentVariable, constant_DefaultOutputFile) }
+    }
+
+    if(Flags::Verbose.IsActive())
+    { PRINT_OUT("::Validating output file location: {}'{}'{}\n", COLOR_BOLD(CYAN), try_output_location, COLOR_RESET) }
+
+    try_SetOutputFile(try_output_location.c_str());
 
     long argument_NumberOfHosts = 0;
 
@@ -84,63 +103,66 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    std::string nmap_command_line = (NMAP NMAP_ARGS NMAP_HOSTS) + std::to_string(argument_NumberOfHosts) + (NMAP_OUT_FLAG NMAP_TEMP_OUT);
-
-    if(!Flags::Verbose.IsActive())
-        nmap_command_line += NMAP_BG;
+    std::string nmap_command_line = \
+    (NMAP NMAP_ARGS NMAP_HOSTS) + std::to_string(argument_NumberOfHosts) + (NMAP_OUT_FLAG NMAP_TEMP_OUT);
 
     if(Flags::Verbose.IsActive())
-        PRINT_OUT("::Nmap Command: {}\n", nmap_command_line.c_str());
+    { PRINTOUT("::Running Nmap\n") }
+    else
+    {
+        nmap_command_line += NMAP_BG;
+        PRINT_OUT("::Running '{}'\n", nmap_command_line.c_str())
+    }
 
-    int nmap_success = 0;
+    int nmap_status = 1;
 
-    PRINTOUT("::Running Nmap\n")
-
-    if(!Flags::DebugDry.IsActive() && !Flags::DebugAll.IsActive())
-        nmap_success = system(nmap_command_line.c_str());
-
-    if(Flags::DebugAll.IsActive())
-        std::print("{} Now is when nmap would have run\n", DEBUG());
+    if(Flags::DebugDry.IsActive())
+    { PRINT_DEBUG("{} Now is when nmap would have run\n", DEBUG()) }
+    else
+    { nmap_status = system(nmap_command_line.c_str()); }
 
     std::ifstream nmap_temp_file(NMAP_TEMP_OUT);
 
-    if(!Flags::DebugAll.IsActive() && nmap_success != 0 && !nmap_temp_file)
+    if(!Flags::DebugDry.IsActive() && (nmap_status != 0 || !nmap_temp_file))
     {
-        std::print("{} Unable to read nmap output! Nmap exit code: %d{}\n", ERROR(), nmap_success, RESET_COLOR());
+        PRINT_MESSAGE("{} Unable to read nmap output! Nmap exit code: {}\n", ERROR(), nmap_status, RESET_COLOR())
         nmap_temp_file.close();
-        return 1;
+        return nmap_status;
     }
 
-    PRINTOUT("::Nmap finished\n")
+    if(!Flags::Verbose.IsActive())
+    { PRINTOUT("::Nmap finished\n") }
 
     std::string nmap_output;
     std::stringstream nmap_output_buffer;
 
-    if(!Flags::DebugAll.IsActive())
-        nmap_output_buffer << nmap_temp_file.rdbuf();
+    if(Flags::DebugDry.IsActive())
+    { PRINT_DEBUG("{} Now is when 'nmap_output' would have been buffered with the data inside '.ping'\n", DEBUG()) }
     else
-        std::print("{} Now is when 'nmap_output' would have been buffered with the data inside '.ping'\n", DEBUG());
+    { nmap_output_buffer << nmap_temp_file.rdbuf(); }
 
     nmap_temp_file.close();
 
-    if(!Flags::DebugAll.IsActive() && Flags::DebugMode.IsActive())
-        std::print("{} Nmap output file '{}' will not be deleted\n", DEBUG(), NMAP_TEMP_OUT);
+    if(Flags::DebugDry.IsActive())
+    { PRINT_DEBUG("{} Nmap output file '{}' will not be deleted\n", DEBUG(), NMAP_TEMP_OUT) }
     else
-        std::filesystem::remove(std::filesystem::path(NMAP_TEMP_OUT));
+    { std::filesystem::remove(std::filesystem::path(NMAP_TEMP_OUT)); }
 
     nmap_output = nmap_output_buffer.str();
     nmap_output_buffer.clear();
 
-    std::string output_data = shitty_DoAllRegexOps(nmap_output);
+    if(Flags::Verbose.IsActive())
+    { PRINT_OUT("::Writing Nmap Output to '{}'\n", Options::Output.GetValue()) }
 
-    if(Flags::DebugMode.IsActive())
-        std::print("{} Nmap Output:\n{}{}{}\n", DEBUG(), COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR());
-
-    if(Flags::DebugAll.IsActive())
+    if(!Flags::DebugDry.IsActive())
+    { PRINT_DEBUG("Nmap Output:\n{}{}{}\n", COLOR(YELLOW), nmap_output.c_str(), RESET_COLOR()) }
+    else
     {
-        std::print("{} This is when all regex operations would have run. Instead, the program will now early return\n", DEBUG());
+        PRINT_DEBUG("{} This is when all regex operations would have run. Instead, the program will now early return\n", DEBUG())
         return 0;
     }
+
+    std::string output_data = shitty_DoAllRegexOps(nmap_output);
 
     PRINTOUT("::Parsing output\n")
 
@@ -148,22 +170,20 @@ int main(int argc, char** argv)
 
     if(output_data.empty())
     {
-        PRINTOUT("::No valid hosts found!\n");
-
+        PRINTOUT("::No valid hosts were found, so no output will be written\n")
         castanet_output_file.close(); // FIXME: is this allowed?
         return 0;
     }
 
     if(!castanet_output_file)
     {
-        PRINT_MESSAGE("{} Output file '{}' is unable to be opened/written to! The program will print nmap's captured output before aborting.\n{}Nmap Output:{}\n{}\n", ERROR(), Options::Output.GetValue(), COLOR_BOLD(GREEN), RESET_COLOR(), nmap_output);
-
+        PRINT_MESSAGE("{} Output file '{}' is unable to be opened/written to! The program will print nmap's captured output before aborting.\n{}Nmap Output:{}\n{}\n", ERROR(), Options::Output.GetValue(), COLOR_BOLD(GREEN), RESET_COLOR(), nmap_output)
         castanet_output_file.close(); // FIXME: is this allowed?
         return 1;
     }
 
     if(Flags::DryRun.IsActive())
-        std::print("{}\n", output_data);
+    { PRINT_DEBUG("{}\n", output_data) }
     else
     {
         castanet_output_file << output_data;

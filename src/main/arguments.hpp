@@ -41,7 +41,7 @@ R"~(    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--dry-run]
         -s, --silent         suppress all terminal printouts (no effect on output file)
         -m, --minimal        only output valid host addresses
         -d, --dns-always     always include DNS names in the output file (mainly used with '-m')
-        -p, --pipe           same as '--dry-run --no-color --minimal' (designed for piping)
+        -p, --pipe           same as '--dry-run --no-color --silent --minimal' (designed for piping)
         -o, --output FILE    override the output destination file
 
     Environment:
