@@ -10,7 +10,8 @@
             "name": "linux-debug",
             "binaryDir": "${sourceDir}/Linux_Debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         },
         {
