@@ -1,0 +1,9 @@
+# Sublime Project
+*.sublime-*
+
+# Clangd
+.cache/
+compile_commands*json
+
+# Build
+build/
