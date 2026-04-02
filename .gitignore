@@ -3,7 +3,9 @@
 compile_commands*.json
 
 # build system stuff
-build/
+Linux_Debug/
+Linux_Release/
+Windows/
 
 # testing files
 tests/
