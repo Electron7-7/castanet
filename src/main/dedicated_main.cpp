@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
     try
     {
-        argument_NumberOfHosts = std::stoll(argv[last_argc_processed]);
+        argument_NumberOfHosts = std::stoll(argv[++last_argc_processed]);
     }
     catch(std::invalid_argument const& exception)
     {
