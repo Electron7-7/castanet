@@ -15,14 +15,14 @@ FLAGS_DEBUG_WINDOWS   := # Nothing yet
 FLAGS_RELEASE_COMMON  := -O3
 FLAGS_RELEASE_WINDOWS := # Nothing yet
 FLAGS_RELEASE_LINUX   := # Nothing yet
-FLAGS_CXX_COMMON      := -std=c++20
+FLAGS_CXX_COMMON      := -std=c++23
 FLAGS_CC_COMMON       := -std=c11
 FLAGS_WINDOWS         := -mwindows -static
 FLAGS_LINUX           := # Nothing yet
-LDFLAGS_LINUX         := # Nothing yet
-LDFLAGS_WINDOWS       := # Nothing yet
+LDFLAGS_LINUX         := -L src/lib -lgetargs_linux
+LDFLAGS_WINDOWS       := -L src/lib -lgetargs_windows
 
-INCLUDE := -I src
+INCLUDE := -I src -I src/include
 
 DIR_ROOT    := build
 DIR_LINUX   := Linux
@@ -66,10 +66,7 @@ VPATH := $(SRC_DIRS)
 
 SRC := src
 
-SRC_DIRS :=          \
-    $(SRC)/arguments \
-    $(SRC)/system    \
-
+SRC_DIRS := $(SRC)/main
 
 CC_SRCS  := $(foreach directory,$(SRC_DIRS),$(wildcard $(directory)/*.c))
 CXX_SRCS := $(foreach directory,$(SRC_DIRS),$(wildcard $(directory)/*.cpp))

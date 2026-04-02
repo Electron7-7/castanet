@@ -1,31 +1,33 @@
 #ifndef ARGUMENTS_H
 #define ARGUMENTS_H
 
-#include "argument.hpp"
+#include "getargs/argument.hpp"
 
 namespace Flags
 {
-    const Flag Help      ("--help", "-h");
-    const Flag Version   ("--version", "-v");
-    const Flag Verbose   ("--verbose", "-V");
-    const Flag Timestamp ("--timestamp", "-t");
-    const Flag NoColor   ("--no-color");
-    const Flag NoMessage ("--no-message");
-    const Flag Silent    ("--silent", "-s");
-    const Flag Minimal   ("--minimal", "-m");
-    const Flag YesDNS    ("--dns-always", "-d");
-    const Flag Pipe      ("--pipe", "-p");
-    const Flag DebugMode ("--debug");
-    const Flag DebugDry  ("--debug-no-nmap");
+    static Flag Help      ("--help", "-h");
+    static Flag Version   ("--version", "-v");
+    static Flag Verbose   ("--verbose", "-V");
+    static Flag Timestamp ("--timestamp", "-t");
+    static Flag DryRun    ("--dry-run", "-n");
+    static Flag NoColor   ("--no-color");
+    static Flag NoMessage ("--no-message");
+    static Flag Silent    ("--silent", "-s");
+    static Flag Minimal   ("--minimal", "-m");
+    static Flag YesDNS    ("--dns-always", "-d");
+    static Flag Pipe      ("--pipe", "-p");
+    static Flag DebugMode ("--debug");
+    static Flag DebugDry  ("--debug-no-nmap");
+    static Flag DebugAll  ("--debug-all");
 }
 
 namespace Options
 {
-    const Option Output    ("--output", "-o", true);
+    static Option Output    ("--output", "-o", true);
 }
 
 constexpr const char* _Help_Printout =
-R"~(    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--no-output]
+R"~(    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--dry-run]
                     [--no-color] [--no-message] [-s|--silent] [-m|--minimal]
                     [-p|--pipe] [-o|--output <path>] <number_of_hosts>
     Options:
@@ -33,13 +35,13 @@ R"~(    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--no-outpu
         -v, --version        print program version
         -V, --verbose        make nmap output visible
         -t, --timestamp      output includes a small timestamp at the beginning (overriden by '-m')
-        -n, --no-output      do not write output to a file
+        -n, --dry-run        do not write output to a file
             --no-color       remove colors from terminal output
             --no-message     suppress only [WARNING], [ERROR], and [DEBUG] messages
         -s, --silent         suppress all terminal printouts (no effect on output file)
         -m, --minimal        only output valid host addresses
         -d, --dns-always     always include DNS names in the output file (mainly used with '-m')
-        -p, --pipe           same as '--no-message --no-color --minimal' (designed for piping)
+        -p, --pipe           same as '--dry-run --no-color --minimal' (designed for piping)
         -o, --output FILE    override the output destination file
 
     Environment:
@@ -54,6 +56,6 @@ R"~(    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--no-outpu
         castanet -p 40 | nmap -sC -sV -Pn -oN huge_scan -iL -
 )~";
 
-constexpr const char* _Version_Printout = "castanet v2.0.4";
+constexpr const char* _Version_Printout = "castanet v2.1.5";
 
 #endif // ARGUMENTS_H

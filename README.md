@@ -1,5 +1,21 @@
-# castanet
-A fun little web-scraper, that doesn't discriminate.
+# castanet v2.0
+```
+    Usage: castanet [-h|--help] [-v|--version] [-V|--verbose] [-n|--dry-run]
+                    [--no-color] [--no-message] [-s|--silent] [-m|--minimal]
+                    [-p|--pipe] [-o|--output <path>] <number_of_hosts>
+    Options:
+        -h, --help           print help document
+        -v, --version        print program version
+        -V, --verbose        make nmap output visible
+        -t, --timestamp      output includes a small timestamp at the beginning (overriden by '-m')
+        -n, --dry-run        do not write output to a file
+            --no-color       remove colors from terminal output
+            --no-message     suppress only [WARNING], [ERROR], and [DEBUG] messages
+        -s, --silent         suppress all terminal printouts (no effect on output file)
+        -m, --minimal        only output valid host addresses
+        -d, --dns-always     always include DNS names in the output file (mainly used with '-m')
+        -p, --pipe           same as '--dry-run --no-color --minimal' (designed for piping)
+        -o, --output FILE    override the output destination file
 
 ## Note for Windows Users
 I haven't tested the pre-compiled .exe files on Windows, so your mileage may vary. I'm also not paying to sign my code, so you'll probably wanna compile it yourself using MSYS2, anyways (otherwise, Windows Defender throws a huge fit).
